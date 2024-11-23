@@ -10,6 +10,7 @@ import ADMINRouter from "./routers/ADMIN.router.js";
 import ProductRouter from "./routers/Product.router.js";
 import CardRouter from "./routers/Card.Router.js";
 import OrderRouter from "./routers/Order.rouder.js";
+import NotificationRouter from "./routers/Notification.router.js";
 
 const app = express();
 
@@ -33,6 +34,7 @@ app.use("/ping", (req, res, next) => {
 
 //
 app.use("/api/v3/user", UserRouter);
+app.use("/api/v3/User/Notification", NotificationRouter);
 app.use("/api/v3/Content", ContentRouter);
 app.use("/api/v3/Admin", ADMINRouter);
 app.use("/api/v3/Product", ProductRouter);

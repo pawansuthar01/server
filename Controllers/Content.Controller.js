@@ -281,7 +281,6 @@ export const getAllPost = async (req, res, next) => {
 // comment api//for post///
 export const addCommentPost = async (req, res, next) => {
   const { comment } = req.body;
-  console.log(comment);
   const { userName } = req.user;
   const { id } = req.params;
   if (!comment || !userName) {
@@ -314,12 +313,12 @@ export const addCommentPost = async (req, res, next) => {
     if (post.userId && post.userId.userName !== userName) {
       const notification = new Notification({
         userId: post.userId,
-        userName: userName,
+
         message: `${userName} commented on your post: "${comment}"`,
         type: "comment",
         read: false,
       });
-      console.log(notification);
+
       await notification.save();
     }
     res.status(200).json({

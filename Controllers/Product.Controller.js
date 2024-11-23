@@ -1,4 +1,6 @@
+import Notification from "../module/Notification.module.js";
 import Product from "../module/Product.module.js";
+import User from "../module/use.module.js";
 import AppError from "../utils/AppError.js";
 import cloudinary from "cloudinary";
 import fs from "fs/promises";
@@ -6,6 +8,7 @@ import fs from "fs/promises";
 // //upload product// //
 export const ProductUpload = async (req, res, next) => {
   const { name, description, price } = req.body;
+  const { userName } = req.user;
   if (!name || !description || !price) {
     return next(new AppError(" All felids is required", 400));
   }
@@ -43,6 +46,21 @@ export const ProductUpload = async (req, res, next) => {
       }
     }
     await product.save();
+
+    const users = await User.find({}, "_id");
+    if (!users || users.length === 0) {
+      return next(new AppError("no user found ...."));
+    }
+
+    const notification = users.map((user) => ({
+      userId: user._id,
+
+      message: `${userName} has new product Upload: "${product.name}"`,
+      type: "new product",
+      read: false,
+    }));
+
+    await Notification.insertMany(notification);
 
     res.status(200).json({
       success: true,
