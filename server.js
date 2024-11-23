@@ -1,11 +1,10 @@
 import { config } from "dotenv";
-import Razorpay from "razorpay";
 config();
 
 import app from "./app.js";
 import { v2 } from "cloudinary";
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 5005;
 
 v2.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
