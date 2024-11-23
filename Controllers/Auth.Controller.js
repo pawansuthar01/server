@@ -9,6 +9,7 @@ const cookieOption = {
   httpOnly: true,
   secure: true,
 };
+
 export const RegisterUser = async (req, res, next) => {
   const { userName, fullName, email, password, phoneNumber } = req.body;
   if (!fullName || !email || !password || !userName || !phoneNumber) {

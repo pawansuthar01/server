@@ -1,3 +1,4 @@
+import Notification from "../module/Notification.module.js";
 import Post from "../module/Post.module.js";
 import Reel from "../module/Reel.module.js";
 import User from "../module/use.module.js";
@@ -5,14 +6,18 @@ import AppError from "../utils/AppError.js";
 import cloudinary from "cloudinary";
 import fs from "fs/promises";
 // post //
+
 export const PostUpload = async (req, res, next) => {
+  const { id } = req.user;
+  console.log(id);
   const { title, description } = req.body;
 
-  if (!title || !description) {
+  if (!title || !description || !id) {
     return next(new AppError("All fields are required", 400));
   }
 
   const post = await Post.create({
+    userId: id,
     title,
     description,
 
@@ -293,7 +298,7 @@ export const addCommentPost = async (req, res, next) => {
       return next(new AppError("enter valid user name,please try again", 400));
     }
     const post = await Post.findById(id);
-
+    console.log(post.userId);
     if (!post) {
       return next(new AppError("post is does not exit,please try again", 400));
     }
@@ -306,10 +311,22 @@ export const addCommentPost = async (req, res, next) => {
     post.numberOfComment = post.comments.length;
     await post.save();
 
+    if (post.userId && post.userId.userName !== userName) {
+      const notification = new Notification({
+        userId: post.userId,
+        userName: userName,
+        message: `${userName} commented on your post: "${comment}"`,
+        type: "comment",
+        read: false,
+      });
+      console.log(notification);
+      await notification.save();
+    }
     res.status(200).json({
       success: true,
       data: post,
       numberOfComment: post.numberOfComment,
+
       message: "successfully comment ...",
     });
   } catch (error) {

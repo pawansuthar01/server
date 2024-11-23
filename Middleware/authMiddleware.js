@@ -13,6 +13,7 @@ export const isLoggedIn = async (req, res, next) => {
     if (!UserDetails) {
       return next(new AppError("Token is not valid please login..", 400));
     }
+
     req.user = {
       id: UserDetails.id,
       userName: UserDetails.userName,

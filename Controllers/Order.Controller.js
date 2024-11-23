@@ -71,26 +71,23 @@ export const createOrderPayment = async (req, res, next) => {
   try {
     const { totalAmount } = req.body;
 
-    // Validate totalAmount
     if (!totalAmount || totalAmount <= 0) {
       return next(new AppError("Invalid or missing totalAmount", 400));
     }
 
-    // Configure payment options
     const options = {
       amount: totalAmount * 100,
       currency: "INR",
-      receipt: `order_rcptid_${Date.now()}`, // Generate unique receipt ID
+      receipt: `order_rcptid_${Date.now()}`,
     };
 
-    // Create Razorpay order
     const order = await razorpay.orders.create(options);
 
     if (!order) {
       return next(new AppError("Failed to create Razorpay order", 500));
     }
     console.log(order.id);
-    // Send success response
+
     res.status(200).json({
       success: true,
       orderId: order.id,

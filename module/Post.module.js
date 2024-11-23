@@ -1,6 +1,11 @@
 import { model, Schema } from "mongoose";
 const PostSchema = new Schema(
   {
+    userId: {
+      type: String,
+      ref: "User",
+      required: true,
+    },
     title: {
       type: "string",
       required: [true, "title is required.."],

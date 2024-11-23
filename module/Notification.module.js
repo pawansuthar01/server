@@ -4,14 +4,10 @@ const NotificationSchema = new Schema(
   {
     userId: {
       type: String,
-      ref: "USER",
+      ref: "User",
       required: true,
     },
-    userName: {
-      type: String,
-      ref: "USER",
-      required: true,
-    },
+
     message: {
       type: String,
       required: true,
@@ -39,5 +35,6 @@ const NotificationSchema = new Schema(
     timestamps: true,
   }
 );
+
 const Notification = model("Notification", NotificationSchema);
 export default Notification;
