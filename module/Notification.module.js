@@ -7,6 +7,11 @@ const NotificationSchema = new Schema(
       ref: "USER",
       required: true,
     },
+    userName: {
+      type: String,
+      ref: "USER",
+      required: true,
+    },
     message: {
       type: String,
       required: true,
@@ -16,9 +21,11 @@ const NotificationSchema = new Schema(
       enum: [
         "like",
         "comment",
+        "replay",
         "message",
         "New Account",
-        "Order",
+        "New Order",
+        "Canceled Order",
         "blog",
         "new product",
       ],

@@ -425,11 +425,13 @@ export const exitCommentInPostById = async (req, res, next) => {
   }
 };
 export const deleteCommentInPostById = async (req, res, next) => {
-  const { userName } = req.user;
+  const { userName } = req.body;
   const { postId, commentId } = req.query;
-  console.log(postId, commentId);
-  if (!postId || !commentId) {
-    return next(new AppError("postId and CommentId is required", 400));
+  console.log(req.body);
+  if (!postId || !commentId || !userName) {
+    return next(
+      new AppError("postId and CommentId or userName is required", 400)
+    );
   }
   try {
     const findComment = await Post.findOne({
