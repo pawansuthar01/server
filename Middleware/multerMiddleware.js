@@ -1,28 +1,27 @@
 import path from "path";
 import multer from "multer";
+import { v4 as uuidv4 } from "uuid";
 import AppError from "../utils/AppError.js";
+
 const upload = multer({
-  dest: "uploads/",
-  limits: { fileSize: 50 * 1024 * 1024 },
+  limits: { fileSize: 100 * 1024 * 1024 }, // 50 MB limit for each file
   storage: multer.diskStorage({
-    destination: "uploads/",
+    destination: (req, file, cd) => {
+      cd(null, "uploads/"); // Save files in 'uploads/' directory
+    },
     filename: (req, file, cd) => {
-      cd(null, file.originalname);
+      const uniqueName = `${uuidv4()}-${file.originalname}`;
+      cd(null, uniqueName); // Unique name to avoid conflicts
     },
   }),
   fileFilter: (req, file, cd) => {
-    let ext = path.extname(file.originalname);
-    if (
-      ext !== ".jpg" &&
-      ext !== ".svg" &&
-      ext !== ".jpeg" &&
-      ext !== ".png" &&
-      ext !== ".webp" &&
-      ext !== ".mp4"
-    ) {
-      cd(new AppError("unSupported file type...", 400));
+    const ext = path.extname(file.originalname).toLowerCase();
+    const allowedExts = [".jpg", ".svg", ".jpeg", ".png", ".webp", ".mp4"];
+    if (!allowedExts.includes(ext)) {
+      return cd(new AppError("Unsupported file type...", 400), false);
     }
     cd(null, true);
   },
 });
+
 export default upload;

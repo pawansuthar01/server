@@ -58,7 +58,7 @@ ADMINRouter.route("/Product").post(
   isLoggedIn,
   authorizeRoles("ADMIN", "AUTHOR"),
 
-  upload.single("image"),
+  upload.array("images", 10),
   ProductUpload
 );
 

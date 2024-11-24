@@ -9,14 +9,12 @@ const ProductSchema = new Schema(
       type: Number,
       required: true,
     },
-    image: {
-      public_id: {
-        type: String,
+    images: [
+      {
+        public_id: { type: String, required: true },
+        secure_url: { type: String, required: true },
       },
-      secure_url: {
-        type: String,
-      },
-    },
+    ],
 
     description: {
       type: String,

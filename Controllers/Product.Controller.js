@@ -5,72 +5,84 @@ import AppError from "../utils/AppError.js";
 import cloudinary from "cloudinary";
 import fs from "fs/promises";
 
-// //upload product// //
 export const ProductUpload = async (req, res, next) => {
   const { name, description, price } = req.body;
   const { userName } = req.user;
+
+  // Validate required fields
   if (!name || !description || !price) {
-    return next(new AppError(" All felids is required", 400));
+    return next(new AppError("All fields are required", 400));
   }
+
   try {
+    let imageUploads = [];
+    if (req.files && req.files.length > 0) {
+      // Upload images to Cloudinary
+      imageUploads = await Promise.all(
+        req.files.map(async (file) => {
+          const uploadResult = await cloudinary.v2.uploader.upload(file.path, {
+            folder: "Product",
+          });
+
+          // Remove the local file after successful upload
+          await fs.rm(file.path, { force: true });
+
+          // Return Cloudinary image details
+          return {
+            public_id: uploadResult.public_id,
+            secure_url: uploadResult.secure_url,
+          };
+        })
+      );
+    }
+
+    // Ensure at least one image is uploaded
+    if (imageUploads.length === 0) {
+      return next(
+        new AppError("Image upload failed. No product was created.", 400)
+      );
+    }
+
+    // Create the product after successful image uploads
     const product = await Product.create({
       name,
       description,
       price,
-
-      image: {
-        public_id: "this is a one time use",
-        secure_url: "this is a one time use",
-      },
+      images: imageUploads,
     });
-    if (!product) {
-      return next(
-        new AppError(" product failed  to upload, Please try again..", 400)
-      );
-    }
-    if (req.file) {
-      try {
-        const imageUpload = await cloudinary.v2.uploader.upload(req.file.path, {
-          folder: "Product",
-        });
-        if (imageUpload) {
-          product.image.public_id = imageUpload.public_id;
-          product.image.secure_url = imageUpload.secure_url;
-        }
-        fs.rm(`uploads/${req.file.filename}`);
-      } catch (error) {
-        fs.rm(`uploads/${req.file.filename}`);
-        return next(
-          new AppError(`file upload file try again ${error.message}`, 400)
-        );
-      }
-    }
-    await product.save();
 
+    // Notify users
     const users = await User.find({}, "_id");
-    if (!users || users.length === 0) {
-      return next(new AppError("no user found ...."));
+    if (users && users.length > 0) {
+      const notifications = users.map((user) => ({
+        userId: user._id,
+        message: `${userName} has uploaded a new product: "${product.name}"`,
+        type: "new product",
+        read: false,
+      }));
+
+      await Notification.insertMany(notifications);
     }
 
-    const notification = users.map((user) => ({
-      userId: user._id,
-
-      message: `${userName} has new product Upload: "${product.name}"`,
-      type: "new product",
-      read: false,
-    }));
-
-    await Notification.insertMany(notification);
-
+    // Send success response
     res.status(200).json({
       success: true,
       data: product,
-      Message: "Product uploaded successfully and notification sent.",
+      message:
+        "Product uploaded successfully with multiple images and notifications sent.",
     });
   } catch (error) {
-    return next(new AppError(error.message, 400));
+    // Cleanup uploaded files in case of error
+    if (req.files) {
+      await Promise.all(
+        req.files.map((file) => fs.rm(file.path, { force: true }))
+      );
+    }
+
+    return next(new AppError(`Product upload failed: ${error.message}`, 400));
   }
 };
+
 export const productUpdate = async (req, res, next) => {
   const { id } = req.params;
   console.log(id);

@@ -13,6 +13,8 @@ export const CreateOrder = async (req, res, next) => {
     PaymentMethod,
     totalAmount,
   } = req.body;
+
+  console.log(products);
   console.log(PaymentMethod, paymentStatus);
   if (!userId || !products || !shippingAddress || !totalAmount) {
     return next(new AppError("All fields are required.", 400));
@@ -30,7 +32,7 @@ export const CreateOrder = async (req, res, next) => {
         product: productFound._id,
         productDetails: {
           name: productFound.name,
-          image: productFound.image,
+          image: productFound.images[0],
           description: productFound.description,
           price: productFound.price,
         },
