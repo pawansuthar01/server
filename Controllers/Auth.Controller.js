@@ -4,8 +4,9 @@ import cloudinary from "cloudinary";
 import fs from "fs/promises";
 import crypto from "crypto";
 import SendEmail from "../utils/SendEmial.js";
+import JWT from "jsonwebtoken";
 const cookieOption = {
-  maxAge: 7 * 24 * 60 * 60 * 1000,
+  maxAge: 7 * 24 * 60 * 1000,
   httpOnly: true,
   secure: true,
 };
@@ -81,6 +82,35 @@ export const RegisterUser = async (req, res, next) => {
     return next(new AppError(error.message, 400));
   }
 };
+
+export const checkJWT = async (req, res, next) => {
+  try {
+    const { token } = req.cookies;
+
+    if (!token) {
+      return next(new AppError("Unauthenticated, please login.", 401));
+    }
+
+    const decoded = JWT.verify(token, process.env.JWT_SECRET);
+    return res
+      .status(200)
+      .json({ valid: true, expired: false, message: "Token is verify/..." });
+  } catch (err) {
+    if (err.name === "TokenExpiredError") {
+      return res.status(401).json({
+        valid: false,
+        expired: true,
+        message: "Token expired, please login again.",
+      });
+    }
+    return res.status(401).json({
+      valid: false,
+      expired: false,
+      message: "Invalid token, please login again.",
+    });
+  }
+};
+
 export const login = async (req, res, next) => {
   const { email, password } = req.body;
   if (!email || !password) {
@@ -279,9 +309,9 @@ export const UpdateUserProfile = async (req, res, next) => {
           userExist.avatar.public_id = avatarUpload.public_id;
           userExist.avatar.secure_url = avatarUpload.secure_url;
         }
-        fs.rm(`uploads/${req.file.filename}`);
+        await fs.rm(file.path, { force: true });
       } catch (error) {
-        fs.rm(`uploads/${req.file.filename}`);
+        await fs.rm(file.path, { force: true });
         return next(
           new AppError(`file upload file try again ${error.message}`, 400)
         );

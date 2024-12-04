@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   changePassword,
+  checkJWT,
   getProfile,
   login,
   logout,
@@ -15,6 +16,7 @@ const UserRouter = Router();
 UserRouter.post("/register", upload.single("avatar"), RegisterUser);
 UserRouter.post("/login", login);
 UserRouter.get("/logout", logout);
+UserRouter.get("/checkJWT", checkJWT);
 UserRouter.get("/getProfile", isLoggedIn, getProfile);
 UserRouter.post("/resetPassword", resetPassword);
 UserRouter.post("/changePassword:resetToken", changePassword);
