@@ -1,6 +1,8 @@
 import express from "express";
 import cookieParser from "cookie-parser";
-import dataBaseConnection from "./config/dbconncetion.js";
+import dataBaseConnection from "./config/dbConncetion.js";
+
+
 import UserRouter from "./routers/userRouter.js";
 import morgan from "morgan";
 import cors from "cors";
